@@ -1,7 +1,11 @@
 import random
 
-import znc
-import dice.prettytable
+try:
+    import znc
+except ImportError:
+    from dice.tests import mock_znc as znc
+from dice import prettytable
+
 
 class dice(znc.Module):
     description = 'Dice for Mindy\'s game'
@@ -17,9 +21,8 @@ class dice(znc.Module):
         return list(self.nv.keys())
 
     def cmd_add(self, line):
-        try:
-            channel = line.split(' ')[0]
-        except IndexError:
+        channel = line.split(' ')[0]
+        if not channel:
             self.PutModule('Missing argument')
         else:
             if channel in self.nv_list():
@@ -29,9 +32,8 @@ class dice(znc.Module):
                 self.PutModule('Channel enabled')
 
     def cmd_del(self, line):
-        try:
-            channel = line.split(' ')[0]
-        except IndexError:
+        channel = line.split(' ')[0]
+        if not channel:
             self.PutModule('Missing argument')
         else:
             if channel in self.nv_list():
@@ -82,7 +84,7 @@ class dice(znc.Module):
         if message[0] == '!roll' and chan.GetName() in self.nv_list():
             try:
                 target_number = int(message[1])
-            except (ValueError, IndexError) as exp:
+            except (ValueError, IndexError):
                 target_number = 20
             roll = random.randint(1, 20)
             success = roll <= target_number
