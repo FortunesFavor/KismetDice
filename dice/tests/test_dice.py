@@ -3,9 +3,20 @@ import random
 
 from mock import call, Mock
 
-from dice import dice
+from dice import dice, _mkhelp, HELP_TXT
 from dice import prettytable
 # from dice.tests.mock_znc import Module, CONTINUE
+
+TEST_HELP_TXT = """\
++---------+-----------+------------------------+
+| Command | Arguments | Description            |
++---------+-----------+------------------------+
+| Add     | <chan>    | Enable dice in <chan>  |
+| Del     | <chan>    | Disable dice in <chan> |
+| Help    |           | Generate this output   |
+| List    |           |                        |
++---------+-----------+------------------------+\
+"""
 
 
 class DiceTest(unittest.TestCase):
@@ -87,16 +98,15 @@ class DiceTest(unittest.TestCase):
         actual = self.dice.PutModule.call_args_list
         self.assertEqual(actual, lines)
 
+    def test_mkhelp(self):
+        val = _mkhelp()
+        self.assertEquals(TEST_HELP_TXT, val)
+
+    def test_help_txt(self):
+        self.assertEquals(TEST_HELP_TXT, HELP_TXT)
+
     def test_cmd_help(self):
-        # it is less dirty to copy than to nocover.
-        headers = "Command Arguments Description".split()
-        pt = prettytable.PrettyTable(headers)
-        pt.align = 'l'
-        pt.add_row(['Add', '<chan>', 'Enable dice in <chan>'])
-        pt.add_row(['Del', '<chan>', 'Disable dice in <chan>'])
-        pt.add_row(['List', '', ''])
-        pt.add_row(['Help', '', 'Generate this output'])
-        lines = pt.get_string(sortby='Command').splitlines()
+        lines = TEST_HELP_TXT.splitlines()
         lines = [call(x) for x in lines]
         self.dice.cmd_help('')
         actual = self.dice.PutModule.call_args_list

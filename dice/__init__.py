@@ -7,6 +7,20 @@ except ImportError:
 from dice import prettytable
 
 
+def _mkhelp():
+    headers = "Command Arguments Description".split()
+    pt = prettytable.PrettyTable(headers)
+    pt.align = 'l'
+    pt.add_row(['Add', '<chan>', 'Enable dice in <chan>'])
+    pt.add_row(['Del', '<chan>', 'Disable dice in <chan>'])
+    pt.add_row(['List', '', ''])
+    pt.add_row(['Help', '', 'Generate this output'])
+    return pt.get_string(sortby='Command')
+
+
+HELP_TXT = _mkhelp()
+
+
 class dice(znc.Module):
     description = 'Dice for Mindy\'s game'
 
@@ -55,15 +69,7 @@ class dice(znc.Module):
             self.PutModule('No channels enabled')
 
     def cmd_help(self, line):
-        headers = "Command Arguments Description".split()
-        pt = prettytable.PrettyTable(headers)
-        pt.align = 'l'
-        pt.add_row(['Add', '<chan>', 'Enable dice in <chan>'])
-        pt.add_row(['Del', '<chan>', 'Disable dice in <chan>'])
-        pt.add_row(['List', '', ''])
-        pt.add_row(['Help', '', 'Generate this output'])
-        out = pt.get_string(sortby='Command').splitlines()
-        for line in out:
+        for line in HELP_TXT.splitlines():
             self.PutModule(line)
 
     def OnModCommand(self, line):
