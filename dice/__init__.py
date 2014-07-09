@@ -22,7 +22,7 @@ HELP_TXT = _mkhelp()
 
 
 class dice(znc.Module):
-    description = 'Dice for Mindy\'s game'
+    description = 'Dice for Kismet'
 
     def nv_add(self, channel):
         self.nv[channel] = '1'
