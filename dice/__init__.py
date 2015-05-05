@@ -86,21 +86,38 @@ class dice(znc.Module):
             self.PutModule('Unknown command.  Try Help.')
 
     def OnChanMsg(self, nick, chan, message):
+        nick = nick.GetNick()
         message = str(message).split(' ')
-        if message[0] == '!roll' and chan.GetName() in self.nv_list():
-            try:
-                target_number = int(message[1])
-            except (ValueError, IndexError):
-                target_number = 20
-            roll = random.randint(1, 20)
-            success = roll <= target_number
-            success_str = 'Success' if success else 'Failure'
-            template = '{0} rolled {1} vs. {2}: {3}'
-            output = template.format(
-                nick.GetNick(),
-                roll,
-                target_number,
-                success_str,
-            )
-            self.PutIRC('PRIVMSG {0} :{1}'.format(chan.GetName(), output))
+        chan = chan.GetName()
+        if message[0] == '!roll' and chan in self.nv_list():
+            target_number = self._tn(message, 1)
+            self._roll(nick, chan, target_number)
+        return znc.CONTINUE
+
+    def OnPrivMsg(self, nick, message):
+        nick = nick.GetNick()
+        message = str(message).split(' ')
+        if message[0] == '!roll':
+            target_number = self._tn(message, 1)
+            self._roll(nick, nick, target_number)
+        return znc.CONTINUE
+
+    def _tn(self, num, idx):
+        try:
+            return int(num[idx])
+        except (ValueError, IndexError):
+            return 20
+
+    def _roll(self, nick, to, target_number):
+        roll = random.randint(1, 20)
+        success = roll <= target_number
+        success_str = 'Success' if success else 'Failure'
+        template = '{0} rolled {1} vs. {2}: {3}'
+        output = template.format(
+            nick,
+            roll,
+            target_number,
+            success_str,
+        )
+        self.PutIRC('PRIVMSG {0} :{1}'.format(to, output))
         return znc.CONTINUE

@@ -159,3 +159,44 @@ class DiceTest(unittest.TestCase):
         self.dice.OnChanMsg(nick_mock, chan_mock, message)
         expected = 'PRIVMSG #foo :Tritium rolled 15 vs. 14: Failure'
         self.dice.PutIRC.assert_called_once_with(expected)
+
+    def test_onpriv_invalid(self):
+        nick_mock = Mock()
+        nick_mock.GetNick.return_value = 'Tritium'
+        message = 'something not starting with !roll'
+        self.dice.OnPrivMsg(nick_mock, message)
+        assert not self.dice.PutIRC.called, "PutIRC shouldn't have been called"
+
+    def test_onpriv_noarg(self):
+        nick_mock = Mock()
+        nick_mock.GetNick.return_value = 'Tritium'
+        message = '!roll'
+        self.dice.OnPrivMsg(nick_mock, message)
+        expected = 'PRIVMSG Tritium :Tritium rolled 15 vs. 20: Success'
+        self.dice.PutIRC.assert_called_once_with(expected)
+
+    def test_onpriv_with_fourteen(self):
+        nick_mock = Mock()
+        nick_mock.GetNick.return_value = 'Tritium'
+        message = '!roll 14'
+        self.dice.OnPrivMsg(nick_mock, message)
+        expected = 'PRIVMSG Tritium :Tritium rolled 15 vs. 14: Failure'
+        self.dice.PutIRC.assert_called_once_with(expected)
+
+    def test_tn_badstring(self):
+        t = '!roll foo'.split()
+        expected = 20
+        actual = self.dice._tn(t, 1)
+        self.assertEqual(expected, actual)
+
+    def test_tn_novalue(self):
+        t = '!roll'.split()
+        expected = 20
+        actual = self.dice._tn(t, 1)
+        self.assertEqual(expected, actual)
+
+    def test_tn_goodvalue(self):
+        t = '!roll 16'.split()
+        expected = 16
+        actual = self.dice._tn(t, 1)
+        self.assertEqual(expected, actual)
